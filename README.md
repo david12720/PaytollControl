@@ -1,0 +1,39 @@
+# PaytollControl
+
+Extract payroll data from scanned documents (PDF/PNG) via LLM and map to Excel.
+
+## Setup
+
+```bash
+pip install -r requirements.txt
+export GEMINI_API_KEY=your_key_here
+```
+
+## Usage
+
+```bash
+python run.py <feature> <input_files...> [-o output.xlsx] [-w work_dir]
+python run.py --list-features dummy  # list available features
+python run.py placeholder invoice.pdf -o result.xlsx
+```
+
+## Tests
+
+```bash
+python -m pytest tests/ -v
+```
+
+## Architecture
+
+See [CONTEXT.md](CONTEXT.md) for architecture decisions and [CLAUDE.md](CLAUDE.md) for development instructions.
+
+## Adding a new feature
+
+Create `src/payroll_control/features/<name>/` with 5 files:
+1. `prompt.py` — LLM prompt
+2. `model.py` — dataclass for fields
+3. `extractor.py` — DataExtractor subclass
+4. `mapper.py` — ExcelMapper subclass
+5. `register.py` — register with FeatureRegistry
+
+Then add the registration call in `factories/factory.py`.
