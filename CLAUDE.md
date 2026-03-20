@@ -43,6 +43,32 @@ Create `src/payroll_control/features/<name>/` with:
 
 Then add the registration call in `factories/factory.py:bootstrap()`.
 
+## Library-Extractable Core (Constraint)
+
+The core PDF-to-JSON pipeline (preprocessing, chunking, LLM calls, caching, fallback saving) is designed to be extractable as a standalone library in the future. **All new code must preserve this boundary.**
+
+### What belongs to the core pipeline (future library)
+- Image preprocessing: PdfToImageConverter, PageRotator, PageDeskewer, ImageEnhancer
+- LLM client: GeminiModel (and any future providers)
+- Chunking logic, retry logic, cost logging
+- Abstractions: LanguageModel, FileConverter, PreparationStep, CostLogger, CacheManager
+- Core pipeline orchestration: FeaturePipeline
+
+### What belongs to the consuming application (NOT the library)
+- Feature-specific code: prompts, data models, extractors, mappers
+- CLI (run.py)
+- FeatureRegistry, factory wiring
+- Excel/output formatting
+- Application-level config (which feature to run, file paths)
+
+### Rules for new code
+1. **Core pipeline code must never import from features/** — no prompt, model, or extractor references
+2. **Core pipeline code must never depend on a specific data schema** — it receives a prompt and returns raw LLM text; parsing is the consumer's job
+3. **New preprocessing steps** go behind the PreparationStep ABC — no inline image processing in pipeline or feature code
+4. **New LLM providers** go behind the LanguageModel ABC — feature code never references a specific SDK
+5. **No application-level concerns in core** — CLI args, output path decisions, feature registration stay outside
+6. **If you're unsure whether code belongs in core or application** — keep it in the application side; it's easier to move into the library later than to extract it out
+
 ## Commands
 
 - Run tests: `python -m pytest tests/ -v`

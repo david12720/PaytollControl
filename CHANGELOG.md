@@ -8,6 +8,7 @@
 - Fallback response saving in GeminiModel to prevent data loss
 - Non-fatal cost logging (continues on failure)
 - Debug page saving for visual inspection of preprocessed images
+- Architecture boundary tests to enforce library-extractable core pipeline
 
 ### Changed
 - Pipeline outputs JSON instead of Excel (Excel mapping is a future step)
