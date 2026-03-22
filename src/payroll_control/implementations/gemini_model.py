@@ -91,6 +91,9 @@ class GeminiModel(LanguageModel):
             types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"),
         ])
 
+    def extract_from_text(self, text: str, prompt: str) -> str:
+        return self._call_with_retry([prompt, text])
+
     def _save_fallback(self, text: str) -> None:
         if self._fallback_dir is None:
             return
