@@ -29,6 +29,9 @@ Raw LLM responses are saved to `cache/fallback/` before any post-processing. Thi
 ### 7. File-based cache and status
 Simple JSON/text files for cache and status. No database needed. Enables resume capability — if a run crashes, re-running skips completed stages.
 
+### 8. Dual pipeline architecture
+Two pipeline types coexist: `FeaturePipeline` (image-centric: prepare → chunk → LLM extract all data) and `ExcelPipeline` (schema-centric: LLM detects columns once → code extracts rows programmatically). The factory picks the right pipeline based on `FeatureConfig` vs `ExcelFeatureConfig`.
+
 ## Extension guide
 
 ### Adding a new LLM provider

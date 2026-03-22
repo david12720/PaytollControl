@@ -1,7 +1,9 @@
 from dataclasses import dataclass
+from typing import Callable
 
 from ..abstractions.data_extractor import DataExtractor
 from ..abstractions.excel_mapper import ExcelMapper
+from ..abstractions.schema_detector import ColumnMapping
 
 
 @dataclass(frozen=True)
@@ -11,15 +13,22 @@ class FeatureConfig:
     mapper: ExcelMapper
 
 
+@dataclass(frozen=True)
+class ExcelFeatureConfig:
+    name: str
+    schema_prompt: str
+    record_builder: Callable[[list[list], ColumnMapping, str], list[dict]]
+
+
 class FeatureRegistry:
-    _features: dict[str, FeatureConfig] = {}
+    _features: dict[str, FeatureConfig | ExcelFeatureConfig] = {}
 
     @classmethod
-    def register(cls, config: FeatureConfig) -> None:
+    def register(cls, config: FeatureConfig | ExcelFeatureConfig) -> None:
         cls._features[config.name] = config
 
     @classmethod
-    def get(cls, name: str) -> FeatureConfig:
+    def get(cls, name: str) -> FeatureConfig | ExcelFeatureConfig:
         if name not in cls._features:
             available = ", ".join(cls._features.keys()) or "(none)"
             raise KeyError(f"Feature '{name}' not registered. Available: {available}")

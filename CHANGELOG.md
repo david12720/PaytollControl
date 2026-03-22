@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 — 2026-03-22
+
+### Added
+- Excel attendance extraction pipeline: LLM detects column schema once, then rows are extracted programmatically
+- New ABCs: SchemaDetector, SpreadsheetReader
+- New implementations: LlmSchemaDetector (with caching), OpenpyxlReader
+- ExcelPipeline orchestrator in core/ for Excel-based features
+- ExcelFeatureConfig in FeatureRegistry for Excel features
+- LanguageModel.extract_from_text() method for plain text LLM calls
+- excel_attendance feature with Hebrew schema detection prompt
+- 18 new tests (record builder, schema detector, pipeline orchestration)
+
 ## 0.2.0 — 2026-03-20
 
 ### Added
