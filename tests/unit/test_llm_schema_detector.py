@@ -45,6 +45,7 @@ class FakeCacheManager:
 
 
 LLM_RESPONSE = json.dumps({
+    "person_id_column": "A",
     "date_column": "D",
     "from_time_column": "E",
     "to_time_column": "F",
@@ -62,6 +63,7 @@ class TestLlmSchemaDetector:
         result = detector.detect("Row 1: foo | bar")
 
         assert result == ColumnMapping(
+            person_id_column="A",
             date_column="D",
             from_time_column="E",
             to_time_column="F",

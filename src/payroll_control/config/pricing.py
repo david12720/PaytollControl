@@ -4,4 +4,8 @@ MODEL_PRICING_USD_PER_1M = {
         "input_le": 1.25, "output_le": 10.00,
         "input_gt": 2.50, "output_gt": 15.00,
     },
+    "gemini-3.1-pro-preview": {
+        "input_le": 2.00, "output_le": 12.00,
+        "input_gt": 4.00, "output_gt": 18.00,
+    },
 }

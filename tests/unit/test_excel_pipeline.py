@@ -26,7 +26,7 @@ class FakeDetector:
         self._mapping = mapping
         self.detect_calls: list[str] = []
 
-    def detect(self, headers_text: str) -> ColumnMapping:
+    def detect(self, headers_text: str, cache_key: str = "schema") -> ColumnMapping:
         self.detect_calls.append(headers_text)
         return self._mapping
 
@@ -68,24 +68,25 @@ class FakeStatus:
 
 
 MAPPING = ColumnMapping(
-    date_column="A",
-    from_time_column="B",
-    to_time_column="C",
+    person_id_column="A",
+    date_column="B",
+    from_time_column="C",
+    to_time_column="D",
     header_row=1,
     data_start_row=2,
 )
 
 
 def _simple_builder(rows, mapping, sheet):
-    return [{"date": r[0], "from_time": r[1], "to_time": r[2], "sheet": sheet} for r in rows]
+    return [{"person_id": r[0], "date": r[1], "from_time": r[2], "to_time": r[3], "sheet": sheet} for r in rows]
 
 
 class TestExcelPipeline:
     def test_run_extracts_and_writes_json(self, tmp_path):
         reader = FakeReader(
             sheet_names=["Sheet1"],
-            header_rows=[["תאריך", "כניסה", "יציאה"]],
-            data_rows=[["01/02/2025", "06:00", "18:00"]],
+            header_rows=[["ת.ז", "תאריך", "כניסה", "יציאה"]],
+            data_rows=[["12345", "01/02/2025", "06:00", "18:00"]],
         )
         detector = FakeDetector(MAPPING)
         cache = FakeCache()
@@ -117,11 +118,12 @@ class TestExcelPipeline:
         import json
         data = json.loads(result.read_text(encoding="utf-8"))
         assert "test.xlsx" in data
-        assert len(data["test.xlsx"]) == 1
-        assert data["test.xlsx"][0]["date"] == "01/02/2025"
+        assert "12345" in data["test.xlsx"]
+        assert "Sheet1" in data["test.xlsx"]["12345"]
+        assert data["test.xlsx"]["12345"]["Sheet1"][0]["date"] == "01/02/2025"
 
     def test_run_uses_cache_on_second_call(self, tmp_path):
-        reader = FakeReader(["Sheet1"], [["h"]], [["01/02/2025", "06:00", "18:00"]])
+        reader = FakeReader(["Sheet1"], [["h"]], [["12345", "01/02/2025", "06:00", "18:00"]])
         detector = FakeDetector(MAPPING)
         cache = FakeCache()
         status = FakeStatus()
@@ -151,7 +153,7 @@ class TestExcelPipeline:
         reader = FakeReader(
             sheet_names=["S1"],
             header_rows=[["h"]],
-            data_rows=[["01/02/2025", "06:00", "18:00"], ["02/02/2025", "07:00", "17:00"]],
+            data_rows=[["12345", "01/02/2025", "06:00", "18:00"], ["12345", "02/02/2025", "07:00", "17:00"]],
         )
         detector = FakeDetector(MAPPING)
         cache = FakeCache()
@@ -180,10 +182,11 @@ class TestExcelPipeline:
         data = json.loads(result.read_text(encoding="utf-8"))
         assert "file1.xlsx" in data
         assert "file2.xlsx" in data
-        assert len(data["file1.xlsx"]) == 2
+        assert "12345" in data["file1.xlsx"]
+        assert len(data["file1.xlsx"]["12345"]["S1"]) == 2
 
     def test_status_set_on_completion(self, tmp_path):
-        reader = FakeReader(["S1"], [["h"]], [["01/02/2025", "06:00", "18:00"]])
+        reader = FakeReader(["S1"], [["h"]], [["12345", "01/02/2025", "06:00", "18:00"]])
         detector = FakeDetector(MAPPING)
         cache = FakeCache()
         status = FakeStatus()
@@ -204,7 +207,7 @@ class TestExcelPipeline:
         )
         pipeline.run([input_file], output_path)
 
-        assert status.get_status("test_excel", "prepare") == "success"
-        assert status.get_status("test_excel", "extract") == "success"
-        assert status.get_status("test_excel", "cache") == "success"
-        assert status.get_status("test_excel", "json_output") == "success"
+        assert status.get_status("test_excel_test", "prepare") == "success"
+        assert status.get_status("test_excel_test", "extract") == "success"
+        assert status.get_status("test_excel_test", "cache") == "success"
+        assert status.get_status("test_excel_test", "json_output") == "success"
