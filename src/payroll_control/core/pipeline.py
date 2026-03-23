@@ -5,6 +5,7 @@ from ..abstractions.cache_manager import CacheManager
 from ..abstractions.file_preparator import PreparationPipeline
 from ..abstractions.status_tracker import StatusTracker
 from .feature_registry import FeatureConfig
+from .file_key import build_file_key
 
 
 class FeaturePipeline:
@@ -21,7 +22,7 @@ class FeaturePipeline:
         self._status = status
 
     def run(self, input_files: list[Path], output_path: Path) -> Path:
-        file_key = self._feature.name
+        file_key = build_file_key(self._feature.name, input_files)
 
         if self._status.is_complete(file_key):
             print(f"[{file_key}] All stages complete -- skipping.")

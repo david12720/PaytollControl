@@ -113,13 +113,13 @@ def test_full_pipeline_extract_cache_json(work_dir: Path, tmp_path: Path):
     assert len(saved) == 1
     assert saved[0]["employee_name"] == "Test User"
 
-    # Verify cache was created
+    # Verify cache was created (key includes input file stem)
     cache_dir = work_dir / "cache" / "test_feature"
-    assert (cache_dir / "test_feature.json").exists()
+    assert (cache_dir / "test_feature_input.json").exists()
 
     # Verify status was set
     status = JsonStatusTracker(work_dir / "status.json")
-    assert status.is_complete("test_feature")
+    assert status.is_complete("test_feature_input")
 
 
 def test_resume_skips_llm(work_dir: Path, tmp_path: Path):

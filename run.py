@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 def cmd_run(args: argparse.Namespace) -> None:
     from payroll_control.core.feature_registry import FeatureRegistry
+    from payroll_control.core.file_key import build_file_key
     from payroll_control.factories.factory import bootstrap, create_pipeline
 
     work_dir = args.work_dir.resolve()
@@ -17,7 +18,8 @@ def cmd_run(args: argparse.Namespace) -> None:
         print("Registered features:", ", ".join(FeatureRegistry.list_features()))
         return
 
-    output = args.output or (work_dir / "output" / f"{args.feature}_output.json")
+    file_key = build_file_key(args.feature, args.input_files)
+    output = args.output or (work_dir / "output" / f"{file_key}.json")
     pipeline = create_pipeline(args.feature, work_dir)
     pipeline.run(args.input_files, output)
 
