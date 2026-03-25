@@ -23,8 +23,11 @@ Pipeline outputs JSON, not Excel. This avoids file-locking issues and makes the 
 ### 5. Image preprocessing pipeline
 Scanned PDFs go through: PDF→PNG (300 DPI) → Rotate (sideways detection via row/col variance) → Deskew (angle sweep -5° to +5°) → Line removal → Enhance (contrast 4.0, sharpness 2.0). This chain dramatically improves LLM accuracy on faint handwriting.
 
-### 5a. Optional OCR preprocessing
-For documents with difficult handwriting (e.g., employment contracts), Cloud Vision OCR can run as a preprocessing step (`--ocr` flag). The OCR text is passed alongside the document to the LLM, which uses it as an authoritative reference for hard-to-read values. This hybrid approach combines Cloud Vision's accurate character recognition with the LLM's structural understanding. Controlled via `ocr_engine` on `FeatureConfig` — defaults to None (disabled) so existing features are unaffected.
+### 5a. OCR preprocessing
+For documents with difficult handwriting, Cloud Vision OCR runs as a preprocessing step. The OCR text is injected into the prompt alongside the document so the LLM can cross-reference hard-to-read values. This hybrid approach combines Cloud Vision's accurate character recognition with the LLM's structural understanding. Controlled via `ocr_engine` on `FeatureConfig` — enabled by default for `employment_contract`, disabled for other features (can be enabled per-run with `--ocr` CLI flag).
+
+### 5b. Raw PDF mode
+Features can set `raw_pdf=True` on `FeatureConfig` to skip the image preparation pipeline and send the PDF directly to the LLM. This is used by `employment_contract` where Gemini's native PDF understanding outperforms the image conversion path. Features using raw PDF mode can still use OCR preprocessing.
 
 ### 6. Fallback response saving
 Raw LLM responses are saved to `cache/fallback/` before any post-processing. This prevents data loss if downstream steps fail. Additionally, extractors can attach `_llm_raw_text` to records — the pipeline strips it and writes a `.llm_raw.txt` file next to the output JSON, so the raw LLM output and the post-processed result are side-by-side for debugging.
@@ -33,7 +36,10 @@ Raw LLM responses are saved to `cache/fallback/` before any post-processing. Thi
 Simple JSON/text files for cache and status. No database needed. Enables resume capability — if a run crashes, re-running skips completed stages.
 
 ### 8. Dual pipeline architecture
-Two pipeline types coexist: `FeaturePipeline` (image-centric: prepare → chunk → LLM extract all data) and `ExcelPipeline` (schema-centric: LLM detects columns once → code extracts rows programmatically). The factory picks the right pipeline based on `FeatureConfig` vs `ExcelFeatureConfig`.
+Two pipeline types coexist: `FeaturePipeline` (image-centric: prepare → chunk → LLM extract all data) and `ExcelPipeline` (schema-centric: LLM detects columns once → code extracts rows programmatically). The factory picks the right pipeline based on `FeatureConfig` vs `ExcelFeatureConfig`. `FeaturePipeline` also supports raw PDF mode (`raw_pdf=True`) where the PDF bypasses image preparation and is sent directly to the LLM.
+
+### 9. Per-feature configuration
+`FeatureConfig` supports per-feature overrides: custom `preparation_steps` (or `None` for defaults), `raw_pdf` flag, and `ocr_engine`. This allows features like `employment_contract` to use a different LLM model (`gemini-2.5-pro` for handwriting), skip image preprocessing, and always run OCR — without affecting other features.
 
 ## Extension guide
 

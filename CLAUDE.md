@@ -6,7 +6,7 @@ Payroll control tool: extract data from scanned documents (PDF/PNG) via LLM, str
 
 ## Architecture
 
-- **abstractions/**: 7 ABCs defining all contracts
+- **abstractions/**: 8 ABCs defining all contracts (including OcrEngine)
 - **core/**: Business logic (FeaturePipeline, ExcelPipeline, FeatureRegistry) — imports only from abstractions/
 - **implementations/**: Concrete classes (Gemini, image processing, file cache, etc.)
 - **features/<name>/**: Self-contained feature subpackages (prompt, model, extractor, mapper, register)
@@ -25,12 +25,19 @@ run.py → factories/ → implementations/ → abstractions/
 
 ## Image Preparation Pipeline
 
-PDF pages go through this pipeline before LLM extraction:
+PDF pages go through this pipeline before LLM extraction (default steps):
 
 1. **PdfToImageConverter** — renders each PDF page to PNG at 300 DPI
 2. **PageRotator** — detects and corrects rotation (landscape pages, sideways content in portrait pages)
 3. **PageDeskewer** — corrects small skew angles from diagonal scanning
-4. **ImageEnhancer** — increases contrast and sharpness for faint handwriting
+4. **LineRemover** — removes horizontal/vertical table lines that interfere with handwriting recognition
+5. **ImageEnhancer** — increases contrast and sharpness for faint handwriting
+
+Features can override preparation steps via `FeatureConfig.preparation_steps`, or bypass image preparation entirely with `raw_pdf=True` (sends the PDF directly to the LLM).
+
+## OCR Preprocessing
+
+For documents with difficult handwriting, Cloud Vision OCR can run as a preprocessing step. The OCR text is injected into the prompt alongside the document so the LLM can cross-reference hard-to-read values. Controlled via `FeatureConfig.ocr_engine` — enabled by default for `employment_contract`, disabled for other features (can be enabled with `--ocr` CLI flag).
 
 ## Adding a New Feature
 
@@ -48,10 +55,10 @@ Then add the registration call in `factories/factory.py:bootstrap()`.
 The core PDF-to-JSON pipeline (preprocessing, chunking, LLM calls, caching, fallback saving) is designed to be extractable as a standalone library in the future. **All new code must preserve this boundary.**
 
 ### What belongs to the core pipeline (future library)
-- Image preprocessing: PdfToImageConverter, PageRotator, PageDeskewer, ImageEnhancer
+- Image preprocessing: PdfToImageConverter, PageRotator, PageDeskewer, LineRemover, ImageEnhancer
 - LLM client: GeminiModel (and any future providers)
 - Chunking logic, retry logic, cost logging
-- Abstractions: LanguageModel, FileConverter, PreparationStep, CostLogger, CacheManager
+- Abstractions: LanguageModel, FileConverter, PreparationStep, CostLogger, CacheManager, OcrEngine
 - Core pipeline orchestration: FeaturePipeline
 
 ### What belongs to the consuming application (NOT the library)
@@ -73,7 +80,7 @@ The core PDF-to-JSON pipeline (preprocessing, chunking, LLM calls, caching, fall
 
 - Run tests: `python -m pytest tests/ -v`
 - CLI help: `python run.py --help`
-- Run a feature: `python run.py run <feature_name> <input_files...> [-o output.json]`
+- Run a feature: `python run.py run <feature_name> <input_files...> [-o output.json] [--ocr] [--expected-start-date DD/MM/YYYY]`
 - Cost history: `python run.py history [-n N]`
 
 ## Registered Features
@@ -83,7 +90,7 @@ The core PDF-to-JSON pipeline (preprocessing, chunking, LLM calls, caching, fall
 | `attendance` | PDF | Scanned attendance sheets | Extracts daily entry/exit times per employee |
 | `payslip` | PDF | Scanned payslips | Extracts hours breakdown, wages, gross/net salary |
 | `pension` | PDF | Pension deposit reports | Extracts deposit history per insured person |
-| `employment_contract` | PDF | Scanned employment contracts | Extracts contract terms: work schedule, payment type, overtime |
+| `employment_contract` | PDF (raw) | Scanned employment contracts | Extracts contract terms, wage rate, work schedule (OCR always on) |
 | `excel_attendance` | Excel | Attendance workbooks | LLM-detected schema, extracts times + person ID |
 
 ## Cache & Status Keys

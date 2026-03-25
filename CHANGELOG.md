@@ -3,10 +3,19 @@
 ## 0.6.0 — 2026-03-25
 
 ### Added
-- Optional Cloud Vision OCR preprocessing (`--ocr` flag) for improved handwriting recognition in employment contracts
+- Cloud Vision OCR preprocessing for employment contracts (always on by default, optional `--ocr` for other features)
 - OcrEngine ABC and CloudVisionOcr implementation using Google Cloud Vision DOCUMENT_TEXT_DETECTION
-- Page-based cost logging for OCR services (Cloud Vision: $1.50/1K pages)
-- `log_pages()` method on CostLogger for non-token-based API pricing
+- Raw PDF mode (`raw_pdf=True`) — sends PDF directly to LLM, skipping image preparation
+- LineRemover preparation step — removes table lines that interfere with handwriting recognition
+- Per-feature configuration: custom preparation steps, OCR engine, raw PDF mode on FeatureConfig
+- `LanguageModel.extract_from_pdf()` for native PDF processing
+- `log_pages()` method on CostLogger for page-based API pricing (Cloud Vision)
+- `--expected-start-date` CLI flag for employment contract date validation hint
+- `start_date_confidence`, `wage_rate`, `wage_rate_type` fields to employment contract extraction
+- Handwriting-optimized LLM model (`gemini-2.5-pro`) for employment contracts
+
+### Changed
+- Employment contract prompt: added חודשי (monthly) as valid payment_type, improved "על פי הדין" detection, refined start_date location guidance
 
 ## 0.5.0 — 2026-03-24
 
