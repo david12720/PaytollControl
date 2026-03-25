@@ -84,11 +84,17 @@ class FeaturePipeline:
         print(f"[{file_key}] Sending raw PDF to LLM...")
         prepared = []
         for path in input_files:
+            metadata: dict = {}
+            if self._feature.ocr_engine is not None:
+                print(f"[{file_key}] Running OCR on {path.name}...")
+                ocr_texts = self._feature.ocr_engine.ocr_pages(path)
+                metadata["ocr_texts"] = ocr_texts
             prepared.append(PreparedFile(
                 source_path=path,
                 data=path.read_bytes(),
                 mime_type="application/pdf",
                 page_index=0,
+                metadata=metadata,
             ))
         self._status.set_status(file_key, "prepare", "success")
 

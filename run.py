@@ -12,7 +12,7 @@ def cmd_run(args: argparse.Namespace) -> None:
     from payroll_control.factories.factory import bootstrap, create_pipeline
 
     work_dir = args.work_dir.resolve()
-    bootstrap(work_dir)
+    bootstrap(work_dir, enable_ocr=args.ocr)
 
     if args.list_features:
         print("Registered features:", ", ".join(FeatureRegistry.list_features()))
@@ -52,6 +52,7 @@ def main() -> None:
     run_parser.add_argument("-o", "--output", type=Path, default=None, help="Output Excel path.")
     run_parser.add_argument("-w", "--work-dir", type=Path, default=Path("."), help="Working directory.")
     run_parser.add_argument("--expected-start-date", type=str, default=None, help="Expected start date (DD/MM/YYYY) for validation.")
+    run_parser.add_argument("--ocr", action="store_true", default=False, help="Enable Cloud Vision OCR preprocessing for improved handwriting recognition.")
     run_parser.add_argument("--list-features", action="store_true", help="List registered features and exit.")
     run_parser.set_defaults(func=cmd_run)
 

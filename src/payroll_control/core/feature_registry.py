@@ -4,6 +4,7 @@ from typing import Callable
 from ..abstractions.data_extractor import DataExtractor
 from ..abstractions.excel_mapper import ExcelMapper
 from ..abstractions.file_preparator import PreparationStep
+from ..abstractions.ocr_engine import OcrEngine
 from ..abstractions.schema_detector import ColumnMapping
 
 
@@ -14,6 +15,7 @@ class FeatureConfig:
     mapper: ExcelMapper
     preparation_steps: list[PreparationStep] | None = field(default=None)
     raw_pdf: bool = False
+    ocr_engine: OcrEngine | None = None
 
 
 @dataclass(frozen=True)

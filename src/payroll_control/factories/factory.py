@@ -28,7 +28,7 @@ from ..implementations.xlwings_mapper import XlwingsMapper
 _llm: GeminiModel | None = None
 
 
-def bootstrap(work_dir: Path) -> None:
+def bootstrap(work_dir: Path, enable_ocr: bool = False) -> None:
     """Create shared infrastructure and register all features."""
     global _llm
 
@@ -43,11 +43,16 @@ def bootstrap(work_dir: Path) -> None:
     llm_handwriting = GeminiModel(api_key=api_key, model=GEMINI_MODEL_HANDWRITING, cost_logger=cost_logger, fallback_dir=fallback_dir)
     base_mapper = XlwingsMapper()
 
+    ocr_engine = None
+    if enable_ocr:
+        from ..implementations.cloud_vision_ocr import CloudVisionOcr
+        ocr_engine = CloudVisionOcr(api_key=api_key, cost_logger=cost_logger)
+
     register_attendance(language_model=_llm, base_mapper=base_mapper)
     register_payslip(language_model=_llm, base_mapper=base_mapper)
     register_placeholder(language_model=_llm, base_mapper=base_mapper)
     register_pension(language_model=_llm, base_mapper=base_mapper)
-    register_employment_contract(language_model=llm_handwriting, base_mapper=base_mapper)
+    register_employment_contract(language_model=llm_handwriting, base_mapper=base_mapper, ocr_engine=ocr_engine)
     register_excel_attendance()
 
 

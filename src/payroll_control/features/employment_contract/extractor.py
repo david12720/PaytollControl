@@ -21,7 +21,8 @@ class EmploymentContractExtractor(DataExtractor):
         if not prepared_files:
             return []
 
-        prompt = build_prompt(self._expected_start_date)
+        ocr_texts = prepared_files[0].metadata.get("ocr_texts")
+        prompt = build_prompt(self._expected_start_date, ocr_texts=ocr_texts)
 
         if prepared_files[0].mime_type == "application/pdf":
             raw = self._llm.extract_from_pdf(prepared_files[0].data, prompt)

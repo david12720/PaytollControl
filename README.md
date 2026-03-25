@@ -19,6 +19,7 @@ python run.py run payslip payslip.pdf -o result.json
 python run.py run pension pension_report.pdf -o result.json
 python run.py run employment_contract contract.pdf -o result.json
 python run.py run employment_contract contract.pdf --expected-start-date "01/03/2021"
+python run.py run employment_contract contract.pdf --ocr  # Cloud Vision OCR for better handwriting
 python run.py run excel_attendance file1.xlsx file2.xlsx -o result.json
 python run.py history [-n N]  # show API cost history
 ```

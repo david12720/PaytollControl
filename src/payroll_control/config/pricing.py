@@ -9,3 +9,7 @@ MODEL_PRICING_USD_PER_1M = {
         "input_gt": 4.00, "output_gt": 18.00,
     },
 }
+
+PAGE_PRICING_USD_PER_1K = {
+    "cloud-vision-ocr": 1.50,
+}

@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 from ..abstractions.cost_logger import CostLogger
-from ..config.pricing import MODEL_PRICING_USD_PER_1M
+from ..config.pricing import MODEL_PRICING_USD_PER_1M, PAGE_PRICING_USD_PER_1K
 from ..config.settings import GEMINI_TIER_THRESHOLD, USD_TO_ILS
 
 _CSV_HEADERS = ["timestamp", "model", "tier", "input_tokens", "output_tokens", "cost_usd", "cost_ils"]
@@ -53,6 +53,26 @@ class CsvCostLogger(CostLogger):
             csv.writer(f).writerow([
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 model, tier or "flat", input_tokens, output_tokens,
+                f"{cost_usd:.6f}", f"{cost_ils:.4f}",
+            ])
+
+    def log_pages(self, service: str, page_count: int) -> None:
+        rate = PAGE_PRICING_USD_PER_1K.get(service)
+        if not rate:
+            print(f"[cost] {service}: no pricing data ({page_count} pages)")
+            return
+
+        cost_usd = page_count * rate / 1_000
+        cost_ils = cost_usd * USD_TO_ILS
+        self._total_usd += cost_usd
+        self._call_count += 1
+
+        print(f"[cost] {service}: {page_count} page(s) = ${cost_usd:.4f} (ILS {cost_ils:.3f})")
+
+        with open(self._log_path, "a", newline="", encoding="utf-8") as f:
+            csv.writer(f).writerow([
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                service, "per-page", page_count, 0,
                 f"{cost_usd:.6f}", f"{cost_ils:.4f}",
             ])
 

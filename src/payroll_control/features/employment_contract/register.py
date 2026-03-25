@@ -1,5 +1,6 @@
 from ...abstractions.file_preparator import PreparationStep
 from ...abstractions.language_model import LanguageModel
+from ...abstractions.ocr_engine import OcrEngine
 from ...core.feature_registry import FeatureConfig, FeatureRegistry
 from .extractor import EmploymentContractExtractor
 from .mapper import EmploymentContractMapper
@@ -11,6 +12,7 @@ def register(
     language_model: LanguageModel,
     preparation_steps: list[PreparationStep] | None = None,
     raw_pdf: bool = True,
+    ocr_engine: OcrEngine | None = None,
     **_kwargs,
 ) -> None:
     extractor = EmploymentContractExtractor(language_model=language_model)
@@ -21,4 +23,5 @@ def register(
         mapper=mapper,
         preparation_steps=preparation_steps,
         raw_pdf=raw_pdf,
+        ocr_engine=ocr_engine,
     ))
