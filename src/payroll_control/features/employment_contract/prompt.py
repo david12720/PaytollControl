@@ -46,10 +46,31 @@ Here is an example of the expected JSON output:
 START_DATE_HINT = " הערה: על פי מקור מהימן (תלוש שכר), תאריך תחילת העבודה של העובד הוא {expected_date}. השתמש בתאריך הזה כברירת מחדל. שנה אותו רק אם אתה רואה בבירור מוחלט תאריך שונה בשדה 'תאריך תחילת עבודה' בטבלה הראשית — לא בחותמת, לא בתאריך חתימה, ולא בתאריך הודעה. אם יש ספק כלשהו, העדף את התאריך מהרמז."
 NO_HINT = ""
 
+OCR_SECTION = """
 
-def build_prompt(expected_start_date: str | None = None) -> str:
+IMPORTANT — OCR Reference Text:
+A dedicated OCR engine has independently scanned this document. The OCR text below is highly accurate for reading handwritten and printed characters. When you encounter hard-to-read handwritten values (especially dates and numbers), prefer the OCR reading over your own visual interpretation.
+
+{ocr_text}
+
+Use this OCR text as the authoritative source for handwritten values. If the OCR text and your visual reading disagree, trust the OCR text.
+"""
+
+
+def build_prompt(
+    expected_start_date: str | None = None,
+    ocr_texts: list[str] | None = None,
+) -> str:
     if expected_start_date:
         hint = START_DATE_HINT.replace("{expected_date}", expected_start_date)
     else:
         hint = NO_HINT
-    return PROMPT.replace("{start_date_hint}", hint)
+    result = PROMPT.replace("{start_date_hint}", hint)
+
+    if ocr_texts:
+        ocr_combined = "\n--- Page Break ---\n".join(
+            f"Page {i + 1}:\n{text}" for i, text in enumerate(ocr_texts) if text
+        )
+        result += OCR_SECTION.replace("{ocr_text}", ocr_combined)
+
+    return result

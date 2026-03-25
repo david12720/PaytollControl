@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 — 2026-03-25
+
+### Added
+- Optional Cloud Vision OCR preprocessing (`--ocr` flag) for improved handwriting recognition in employment contracts
+- OcrEngine ABC and CloudVisionOcr implementation using Google Cloud Vision DOCUMENT_TEXT_DETECTION
+- Page-based cost logging for OCR services (Cloud Vision: $1.50/1K pages)
+- `log_pages()` method on CostLogger for non-token-based API pricing
+
 ## 0.5.0 — 2026-03-24
 
 ### Added

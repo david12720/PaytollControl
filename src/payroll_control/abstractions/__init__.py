@@ -7,6 +7,7 @@ from .status_tracker import StatusTracker
 from .cost_logger import CostLogger
 from .schema_detector import SchemaDetector, ColumnMapping
 from .spreadsheet_reader import SpreadsheetReader
+from .ocr_engine import OcrEngine
 
 __all__ = [
     "LanguageModel",
@@ -18,4 +19,5 @@ __all__ = [
     "CostLogger",
     "SchemaDetector", "ColumnMapping",
     "SpreadsheetReader",
+    "OcrEngine",
 ]
