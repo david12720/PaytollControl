@@ -4,6 +4,7 @@ This is a monorepo workspace. **Do not work from here** — navigate to the rele
 
 - **`libs/pdf-pipeline/`** — Generic PDF-to-JSON extraction pipeline via LLM (shared library)
 - **`projects/payroll-control/`** — Payroll document processing application (consumes pdf-pipeline)
+- **`projects/players-contract/`** — Player contract salary extraction from IFA contracts (consumes pdf-pipeline)
 
 Each sub-project has its own `CLAUDE.md` with architecture details, commands, and conventions.
 
@@ -20,10 +21,16 @@ Arye/
 │       │   └── implementations/ # Concrete classes (Gemini, image processing, ...)
 │       └── tests/
 ├── projects/
-│   └── payroll-control/       # Payroll app (consumes pdf_pipeline)
-│       ├── src/payroll_control/
+│   ├── payroll-control/       # Payroll app (consumes pdf_pipeline)
+│   │   ├── src/payroll_control/
+│   │   │   ├── factories/     # Wires implementations to features
+│   │   │   └── features/      # Domain features (attendance, payslip, pension, ...)
+│   │   ├── tests/
+│   │   └── run.py             # CLI entry point
+│   └── players-contract/      # Player contract salary extraction (consumes pdf_pipeline)
+│       ├── src/players_contract/
 │       │   ├── factories/     # Wires implementations to features
-│       │   └── features/      # Domain features (attendance, payslip, pension, ...)
+│       │   └── features/      # Domain features (contract_salary)
 │       ├── tests/
 │       └── run.py             # CLI entry point
 └── CLAUDE.md                  # This file
@@ -32,13 +39,17 @@ Arye/
 ## Quick Start
 
 ```bash
-# Install both packages (editable, for development)
+# Install all packages (editable, for development)
 pip install -e libs/pdf-pipeline
 pip install -e projects/payroll-control
+pip install -e projects/players-contract
 
 # Run library tests
 cd libs/pdf-pipeline && python -m pytest tests/ -v
 
-# Run app tests
+# Run payroll-control tests
 cd projects/payroll-control && python -m pytest tests/ -v
+
+# Run players-contract tests
+cd projects/players-contract && python -m pytest tests/ -v
 ```
