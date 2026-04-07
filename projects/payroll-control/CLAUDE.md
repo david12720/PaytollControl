@@ -1,4 +1,4 @@
-# PaytollControl — Claude Code Instructions
+# Payroll Control — Claude Code Instructions
 
 ## Project Overview
 

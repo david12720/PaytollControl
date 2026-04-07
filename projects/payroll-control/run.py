@@ -1,4 +1,4 @@
-"""PaytollControl — CLI entry point."""
+"""Payroll Control — CLI entry point."""
 import argparse
 import sys
 from pathlib import Path
@@ -41,7 +41,7 @@ def cmd_history(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="PaytollControl — extract payroll data from scanned documents and map to Excel.",
+        description="Payroll Control — extract payroll data from scanned documents and map to Excel.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 

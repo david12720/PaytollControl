@@ -1,4 +1,4 @@
-# PaytollControl — Agent Configuration
+# Payroll Control — Agent Configuration
 
 ## Agents
 
