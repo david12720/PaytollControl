@@ -1,4 +1,4 @@
-# PaytollControl
+# Payroll Control
 
 Extract payroll data from scanned documents (PDF/PNG) via LLM, output structured JSON.
 

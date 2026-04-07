@@ -53,3 +53,24 @@ cd projects/payroll-control && python -m pytest tests/ -v
 # Run players-contract tests
 cd projects/players-contract && python -m pytest tests/ -v
 ```
+
+## AI Navigation Guide
+
+### Key Files (Fast-Track)
+
+| File | Role |
+|:-----|:-----|
+| `libs/pdf-pipeline/src/pdf_pipeline/abstractions/` | All contracts — start here to understand the system |
+| `libs/pdf-pipeline/src/pdf_pipeline/core/pipeline.py` | Main orchestration loop |
+| `projects/payroll-control/src/payroll_control/factories/factory.py` | Wires payroll-control parts together |
+| `projects/payroll-control/run.py` | Payroll-control CLI entry point |
+| `projects/players-contract/src/players_contract/factories/factory.py` | Wires players-contract parts together |
+| `projects/players-contract/run.py` | Players-contract CLI entry point |
+
+### Token-Saving Rules
+
+- **DO NOT** read `libs/pdf-pipeline/src/pdf_pipeline/implementations/` unless debugging a specific image processing or API issue
+- **DO NOT** read more than one `features/` subfolder unless comparing logic between two document types
+- **PREFER** reading `abstractions/` over `core/` to understand what the system can do
+- **TRUST** the `factory.py` for understanding how the system is currently configured
+- **IGNORE** `__pycache__`, `.pytest_cache`, and `tests/` unless explicitly verifying a fix
