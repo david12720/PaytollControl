@@ -14,17 +14,21 @@ CRITICAL RULES:
 
 FIELDS TO EXTRACT:
 
-- `player_name`: שם השחקן — The player's full name. Often handwritten on the IFA form under "השחקן".
 - `player_id`: מספר ת.ז. — The player's ID number. Often handwritten on the IFA form.
 - `team_name`: שם הקבוצה — The team/club name. May appear handwritten on the IFA form under "קבוצה", or in the contract header, or in a stamp/seal (חותמת).
 - `season`: עונה — Must be "2025/26".
+- `person_type`: סוג איש הצוות — The category of the person in the contract. Must be one of: "player", "coach", "other".
+  - Use "player" only for football players (שחקן/שחקנית).
+  - Use "coach" only for coaching staff: מאמן, עוזר מאמן, מאמן שוערים, מאמן כושר, מנהל קבוצה.
+  - Use "other" for all non-playing, non-coaching roles — including medical and support staff such as: פיזיותרפיסט, רופא, מאסז'יסט, מנהל ספורטיבי, and any other role not covered above.
+- `person_role`: תפקיד ספציפי — The specific role within the category:
+  - If `person_type` is "player": return null.
+  - If `person_type` is "coach": return one of "head coach", "assistant coach", "team manager", "fitness coach", "goalkeeping coach".
+  - If `person_type` is "other": return the specific profession in English (e.g., "physiotherapist", "doctor", "masseur") if detectable, otherwise return "other".
+- `employment_months`: מספר חודשי העסקה — The total number of months the player is employed under this contract for season 2025/26. Look for the contract duration or payment period (e.g., "10 חודשים", "משולם ב-10 תשלומים"). Return as an integer or null.
 - `base_salary_monthly`: שכר בסיס חודשי — The base monthly salary for season 2025/26. Look in the salary section (המשכורת הבסיסית הכוללת) or the compensation section (שכר בסיס). Return as a number without currency symbols.
-- `bonuses_monthly`: בונוסים חודשיים — Monthly bonus component that is NOT achievement-based. May be listed as a sub-component of the total salary. Return as a number.
-- `global_bonus`: גמול גלובאלי — Global bonus amount if specified in the compensation section. A fixed bonus paid regardless of achievements. Return as a number or null.
-- `credit_points`: נקודות זיכוי — Tax credit points if mentioned. Return as a number or null.
-- `housing_allowance_yearly`: שכר דירה שנתי — Annual housing allowance for season 2025/26. Look for amounts related to דירה/מגורים. Return as a number.
-- `housing_allowance_monthly`: שכר דירה חודשי — Monthly housing allowance. May be explicitly stated or derived from yearly amount divided by number of payments. Return as a number.
-- `car_allowance_monthly`: שכר רכב חודשי — Monthly car/vehicle allowance. Often appears alongside housing as "שכר דירה ורכב" or in per-game bonus breakdowns. Return as a number.
+- `housing_allowance_monthly`: שכר דירה חודשי — Monthly housing allowance. If the contract mentions housing but states no amount, return true. If no housing allowance is mentioned at all, return null.
+- `car_allowance_monthly`: שכר רכב חודשי — Monthly car/vehicle allowance. Often appears alongside housing as "שכר דירה ורכב". If the contract mentions a car allowance but states no amount, return true. If no car allowance is mentioned at all, return null.
 - `points_bonus_per_point`: מענק לנקודת ליגה — Bonus amount per league point (נקודה) for season 2025/26. Look in the section about "מענקים בגין נקודות" or "מענק נקודות ליגה". Return the per-point amount as a number.
 - `max_points_for_bonus`: מקסימום נקודות לחישוב מענק — The maximum number of league points used to cap the total points bonus calculation. Look for a clause that limits the bonus to a certain number of points (e.g., "עד X נקודות", "לא יותר מ-X נקודות"). Return as a number.
 - `goal_assist_penalty_bonus`: מענק לשער/אסיסט/פנדל — Bonus amount per goal (שער/גול), assist (אסיסט/בישול), or penalty (פנדל/בעיטת עונשין). These typically share the same rate in the contract. Look in the achievements section (מענקים בגין הישגים) for the clause about individual performance bonuses. Return as a single number or null.
@@ -37,17 +41,15 @@ OUTPUT FORMAT — return a single JSON object:
 
 ```json
 {
-  "player_name": "יוסי כהן",
   "player_id": "987654321",
   "team_name": "הפועל באר שבע",
   "season": "2025/26",
+  "person_type": "coach",
+  "person_role": "assistant coach",
+  "employment_months": 10,
   "base_salary_monthly": 45000,
-  "bonuses_monthly": 5000,
-  "global_bonus": 3000,
-  "credit_points": 2.25,
-  "housing_allowance_yearly": 48000,
   "housing_allowance_monthly": 4000,
-  "car_allowance_monthly": 1500,
+  "car_allowance_monthly": true,
   "points_bonus_per_point": 800,
   "max_points_for_bonus": 38,
   "goal_assist_penalty_bonus": 2000

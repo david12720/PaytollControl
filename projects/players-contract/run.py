@@ -1,9 +1,26 @@
 """Players Contract — CLI entry point."""
 import argparse
 import sys
+from collections import Counter
 from pathlib import Path
 
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
 sys.path.insert(0, str(Path(__file__).parent / "src"))
+
+
+def _resolve_path(path: Path) -> Path:
+    if path.exists():
+        return path
+    parent = path.parent
+    if not parent.exists():
+        return path
+    target = Counter(path.name)
+    matches = [c for c in parent.iterdir() if c.is_file() and Counter(c.name) == target]
+    if len(matches) == 1:
+        print(f"[path] RTL-reordered filename recovered: {path.name!r} -> {matches[0].name!r}")
+        return matches[0]
+    return path
 
 
 def cmd_run(args: argparse.Namespace) -> None:
@@ -18,10 +35,11 @@ def cmd_run(args: argparse.Namespace) -> None:
         print("Registered features:", ", ".join(FeatureRegistry.list_features()))
         return
 
-    file_key = build_file_key(args.feature, args.input_files)
+    input_files = [_resolve_path(p) for p in args.input_files]
+    file_key = build_file_key(args.feature, input_files)
     output = args.output or (work_dir / "output" / f"{file_key}.json")
     pipeline = create_pipeline(args.feature, work_dir)
-    pipeline.run(args.input_files, output)
+    pipeline.run(input_files, output)
 
 
 def cmd_history(args: argparse.Namespace) -> None:

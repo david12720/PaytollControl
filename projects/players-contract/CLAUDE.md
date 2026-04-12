@@ -12,7 +12,6 @@ projects/players-contract/
 ├── PLAN.md                            # Implementation plan and field mapping
 ├── pyproject.toml                     # Package config (depends on pdf-pipeline)
 ├── run.py                             # CLI entry point (run, history commands)
-├── roy_example.pdf                    # Sample IFA player contract
 ├── src/
 │   └── players_contract/
 │       ├── __init__.py

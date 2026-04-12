@@ -6,6 +6,9 @@ from pdf_pipeline.abstractions.file_preparator import PreparedFile
 from pdf_pipeline.abstractions.language_model import LanguageModel
 from .prompt import PROMPT
 
+DEFAULT_CAR_ALLOWANCE_MONTHLY = 3000
+DEFAULT_HOUSING_ALLOWANCE_MONTHLY = 5000
+
 
 class ContractSalaryExtractor(DataExtractor):
     def __init__(self, language_model: LanguageModel):
@@ -23,17 +26,44 @@ class ContractSalaryExtractor(DataExtractor):
             )
 
         record = self._parse_response(raw)
+        self._resolve_allowances(record)
         self._compute_points_total(record)
-        record["_llm_raw_text"] = raw
         record["source_file"] = prepared_files[0].source_path.name
         record["page_in_document"] = prepared_files[0].page_index + 1
         return [record]
 
     def parse_cached_response(self, raw_text: str) -> list[dict]:
         record = self._parse_response(raw_text)
+        self._resolve_allowances(record)
         self._compute_points_total(record)
-        record["_llm_raw_text"] = raw_text
         return [record]
+
+    def _resolve_allowances(self, record: dict) -> None:
+        if record.get("car_allowance_monthly") is True:
+            record["car_allowance_monthly"] = DEFAULT_CAR_ALLOWANCE_MONTHLY
+
+        if record.get("housing_allowance_monthly") is True:
+            record["housing_allowance_monthly"] = DEFAULT_HOUSING_ALLOWANCE_MONTHLY
+
+        months = record.get("employment_months")
+
+        monthly = record.get("housing_allowance_monthly")
+        if monthly is not None and months is not None:
+            record["housing_allowance_yearly"] = monthly * months
+        else:
+            record["housing_allowance_yearly"] = None
+
+        base = record.get("base_salary_monthly")
+        if base is not None and months is not None:
+            record["base_salary_yearly"] = base * months
+        else:
+            record["base_salary_yearly"] = None
+
+        car = record.get("car_allowance_monthly")
+        if car is not None and months is not None:
+            record["car_allowance_yearly"] = car * months
+        else:
+            record["car_allowance_yearly"] = None
 
     def _compute_points_total(self, record: dict) -> None:
         per_point = record.get("points_bonus_per_point")
