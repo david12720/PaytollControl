@@ -1,0 +1,2 @@
+# Force all text files to be normalized (LF in git, native on checkout)
+* text=auto
