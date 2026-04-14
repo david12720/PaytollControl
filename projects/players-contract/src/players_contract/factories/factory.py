@@ -20,7 +20,20 @@ from pdf_pipeline.implementations.page_deskewer import PageDeskewer
 from pdf_pipeline.implementations.page_rotator import PageRotator
 from pdf_pipeline.implementations.pdf_to_image_converter import PdfToImageConverter
 
+from ..export.contract_salary_mapper import ContractSalaryMapper
+from ..export.excel_mapper import ExcelMapper
 from ..features.contract_salary.register import register as register_contract_salary
+
+_EXCEL_MAPPERS: dict[str, type[ExcelMapper]] = {
+    "contract_salary": ContractSalaryMapper,
+}
+
+
+def create_excel_mapper(feature_name: str) -> ExcelMapper:
+    if feature_name not in _EXCEL_MAPPERS:
+        available = ", ".join(_EXCEL_MAPPERS.keys()) or "(none)"
+        raise KeyError(f"No Excel mapper for feature '{feature_name}'. Available: {available}")
+    return _EXCEL_MAPPERS[feature_name]()
 
 
 def bootstrap(work_dir: Path, enable_ocr: bool = False) -> None:
