@@ -24,9 +24,11 @@ def _resolve_path(path: Path) -> Path:
 
 
 def cmd_run(args: argparse.Namespace) -> None:
+    import json
+
     from pdf_pipeline.core.feature_registry import FeatureRegistry
     from pdf_pipeline.core.file_key import build_file_key
-    from players_contract.factories.factory import bootstrap, create_pipeline
+    from players_contract.factories.factory import bootstrap, create_excel_mapper, create_pipeline
 
     work_dir = args.work_dir.resolve()
     bootstrap(work_dir, enable_ocr=args.ocr)
@@ -39,7 +41,11 @@ def cmd_run(args: argparse.Namespace) -> None:
     file_key = build_file_key(args.feature, input_files)
     output = args.output or (work_dir / "output" / f"{file_key}.json")
     pipeline = create_pipeline(args.feature, work_dir)
-    pipeline.run(input_files, output)
+    json_path = pipeline.run(input_files, output)
+
+    records = json.loads(json_path.read_text(encoding="utf-8"))
+    xlsx_path = create_excel_mapper(args.feature).write(records, json_path.with_suffix(".xlsx"))
+    print(f"[{args.feature}] Saved Excel -> {xlsx_path}")
 
 
 def cmd_history(args: argparse.Namespace) -> None:
